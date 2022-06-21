@@ -1,0 +1,17 @@
+trigger:
+- main
+    
+pool:
+   vmImage: ubuntu-latest
+
+steps:
+- task: CopyFiles@2
+  displayName: 'Copy Files to: drop'
+  inputs:
+    Contents: '**.tf'
+    TargetFolder: drop
+    
+- task: PublishPipelineArtifact@1
+  displayName: 'Publish Pipeline Artifact'
+  inputs:
+    artifact: drop

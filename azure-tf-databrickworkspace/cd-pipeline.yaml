@@ -1,0 +1,55 @@
+# Variable 'var.application' was defined in the Variables tab
+# Variable 'var.az_resource_group_name' was defined in the Variables tab
+# Variable 'var.cost_center' was defined in the Variables tab
+# Variable 'var.environment' was defined in the Variables tab
+# Variable 'var.location' was defined in the Variables tab
+jobs:
+- job: Job_1
+  displayName: Agent job 1
+  pool:
+    vmImage: windows-2019
+  steps:
+  - checkout: self
+  - task: TerraformInstaller@0
+    displayName: Install Terraform latest
+  - task: TerraformTaskV2@2
+    displayName: 'Terraform : init'
+    inputs:
+      workingDirectory: $(System.DefaultWorkingDirectory)/_azure-tf-resourcegroup/drop
+      backendServiceArm: 90f374a8-5256-4cf8-b8cd-c5b3d1bdb792
+      backendAzureRmResourceGroupName: rg-uw-devops-sandbox
+      backendAzureRmStorageAccountName: sauwvmnetcsr01nonprod
+      backendAzureRmContainerName: resourcegroupcontainer
+      backendAzureRmKey: terraform.tfstate
+  - task: replacetokens@5
+    displayName: Replace tokens in main.tf
+    inputs:
+      rootDirectory: $(System.DefaultWorkingDirectory)/_azure-tf-resourcegroup/drop
+      targetFiles: main.tf
+      tokenPattern: custom
+      tokenPrefix: '#{'
+      tokenSuffix: '}'
+  - task: TerraformTaskV2@2
+    displayName: 'Terraform : plan'
+    inputs:
+      command: plan
+      workingDirectory: $(System.DefaultWorkingDirectory)/_azure-tf-resourcegroup/drop
+      environmentServiceNameAzureRM: 90f374a8-5256-4cf8-b8cd-c5b3d1bdb792
+      backendServiceArm: 90f374a8-5256-4cf8-b8cd-c5b3d1bdb792
+      backendAzureRmResourceGroupName: rg-uw-devops-sandbox
+      backendAzureRmStorageAccountName: sauwvmnetcsr01nonprod
+      backendAzureRmContainerName: resourcegroupcontainer
+      backendAzureRmKey: terraform.tfstate
+  - task: TerraformTaskV2@2
+    displayName: 'Terraform : apply'
+    inputs:
+      command: apply
+      workingDirectory: $(System.DefaultWorkingDirectory)/_azure-tf-resourcegroup/drop
+      commandOptions: -auto-approve
+      environmentServiceNameAzureRM: 90f374a8-5256-4cf8-b8cd-c5b3d1bdb792
+      backendServiceArm: 90f374a8-5256-4cf8-b8cd-c5b3d1bdb792
+      backendAzureRmResourceGroupName: rg-uw-devops-sandbox
+      backendAzureRmStorageAccountName: sauwvmnetcsr01nonprod
+      backendAzureRmContainerName: resourcegroupcontainer
+      backendAzureRmKey: terraform.tfstate
+...
